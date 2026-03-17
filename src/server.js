@@ -327,8 +327,10 @@ async function probeGateway() {
 
 // Public health endpoint (no auth) so Railway can probe without /setup.
 // Keep this free of secrets.
+// Keep this free of secrets.
 app.get("/healthz", async (_req, res) => {
   let gatewayReachable = false;
+
   if (isConfigured()) {
     try {
       gatewayReachable = await probeGateway();
@@ -337,8 +339,10 @@ app.get("/healthz", async (_req, res) => {
     }
   }
 
-  res.json({
-    ok: true,
+  const healthy = !isConfigured() || gatewayReachable;
+
+  res.status(healthy ? 200 : 503).json({
+    ok: healthy,
     wrapper: {
       configured: isConfigured(),
       stateDir: STATE_DIR,
